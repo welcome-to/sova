@@ -10,7 +10,7 @@ class Operator:
         assert len(args) == arity, "Wrong number of arguments"
         return self.func(args)
 
-class Composition(Object):
+class Composition:
     def __init__(self,operator, args_list):
         self.operator = operator
         self.args = args_list
@@ -44,9 +44,9 @@ class Eq(Operator):
         Eq.super().__init__(lambda x,y: x == y, 2)
 
 
-class Impl(Object):
+class Impl(Operator):
     def __init__(self):
-        Impl.super().__init__(lambda x, y: if y == 0 and x == 1: False else True, 2)
+        Impl.super().__init__(lambda x, y: x < y, 2)
 
 
 
