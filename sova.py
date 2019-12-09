@@ -30,7 +30,10 @@ class Composition:
             return str(self.operator)
 
     def depth(self):
-        max([i.depth() for i in self.args])+1
+        if self.args:
+            return max([i.depth() for i in self.args])+1
+        else:
+            return 1
 
     def prednf(self):
         for i in range(len(self.args)):
@@ -41,10 +44,17 @@ class Composition:
             if str(self.args[0].operator) == 'or':
                 self.operator == And()
                 self.args = [Composition(Not(),[self.args[0].args[0]]),Composition(Not(),[self.args[0].args[1]])]
+        if str(self.operator)=='or':
+            if str(self.args[0].operator) == 'not' and str(self.args[1].operator) == 'not':
+                self.operator = And()
+                self.args = [self.args[0].args[0],self.args[1].args[0]]
+        for arg in self.args:
+            arg.first_iter()
 
     def todnf(self):
-        self.prednf()
-        #self.first_iter()
+        self = self.prednf()
+        for i in range(self.depth()*5):
+            self.first_iter()
         return self
 
 
