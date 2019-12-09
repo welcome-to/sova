@@ -15,6 +15,9 @@ class Composition:
         self.operator = operator
         self.args = args_list
 
+    def __call__(self):
+        return self.operator(*self.args)
+
 
 
 
