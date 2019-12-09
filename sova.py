@@ -7,8 +7,8 @@ class Operator:
         pass
 
     def __call__(self, *args):
-        assert len(args) == arity, "Wrong number of arguments"
-        return self.func(args)
+        assert len(args) == self.arity, "Wrong number of arguments"
+        return self.func(*args)
 
 class Composition:
     def __init__(self,operator, args_list):
@@ -16,56 +16,95 @@ class Composition:
         self.args = args_list
 
     def __call__(self):
-        return self.operator(*self.args)
+        reargs =[i() for i in self.args]
+        return self.operator(*reargs)
 
+    def __str__(self):
+        if len(self.args) == 2:
+            return '('+str(self.args[0])+str(self.operator)+str(self.args[1])+')'
+        else:
+            return '('+str(self.operator)+str(self.args[0])+')'
+
+class Variable(Operator):
+    def __init__(self,const_name):
+        self.const_name = const_name
+        Operator.__init__(self,lambda: Variable_list_of_means[const_name],0)
+    def __str__(self):
+        return '('+self.const_name+')'
 
 
 
 class Constant(Operator):
     def __init__(self,boolean):
-        Constant.super().__init__(lambda: boolean)
+        self.boolean
+        Operator.__init__(self,lambda : boolean,0)
+
+    def __str__(self):
+        return int(boolean)
 
 class And(Operator):
     def __init__(self):
-        And.super().__init__(lambda x,y: x and y, 2)
+        Operator.__init__(self,lambda x,y: x and y, 2)
+
+    def __str__(self):
+        return 'and'
 
 
 
 class Not(Operator):
     def __init__(self):
-        Not.super().__init__(lambda x: not x, 1)
+        Operator.__init__(self,lambda x: not x, 1)
+
+    def __str__(self):
+        return 'not'
 
 
 class Or(Operator):
     def __init__(self):
-        Or.super().__init__(lambda x,y: x or y, 2)
+        Operator.__init__(self,lambda x,y: x or y, 2)
+    def __str__(self):
+        return 'or'
 
 
 class Xor(Operator):
     def __init__(self):
-        Xor,super().__init__(lambda x,y:not x == y, 2)
+        Operator.__init__(self,lambda x,y:not x == y, 2)
 
+    def __str__(self):
+        return 'xor'
 
 class Eq(Operator):
     def __init__(self):
-        Eq.super().__init__(lambda x,y: x == y, 2)
+        Operator.__init__(self,lambda x,y: x == y, 2)
+
+    def __str__(self):
+        return 'eq'
 
 
 class Impl(Operator):
     def __init__(self):
-        Impl.super().__init__(lambda x, y: x < y, 2)
+        Operator.__init__(self,lambda x, y: x <= y, 2)
+
+    def __str__(self):
+        return 'impl'
 
 
 
 class Nand(Operator):
     def __init__(self):
-        Nand.super().__init__(lambda x , y: not x and y, 2)
+        Operator.__init__(self,lambda x , y: not x and y, 2)
+
+    def __str__(self):
+        return 'nand'
 
 
 
 class Nor(Operator):
     def __init__(self):
-        Nor.super().__init__(lambda x ,y: not x or y, 2)
+        Operator.__init__(self,lambda x ,y: not x or y, 2)
+
+    def __str__(self):
+        return 'nor'
 
 
 
@@ -95,44 +134,55 @@ FuncType = {
 
 
 def parser_copy(line):
-    is_in_brackets = True
+    is_in_brackets = 2
     balance = 0
     for (index, char) in enumerate(line):
         if balance == 0 and index > 0:
-            is_in_brackets = False
-            break
+            is_in_brackets = 1
+            break 
         if (char == '('):
             balance += 1
         if (char == ')'):
             balance -= 1
 
+    if is_in_brackets == 2 and line[0]=='(' and line[-1]==')':
+        is_in_brackets = 0
+
     assert balance == 0, "Wrong bracket balance"
 
-    if is_in_brackets:
-        return parse(line[1:n-1])
+    if is_in_brackets==0:
+        return parser_copy(line[1:-1])
 
     prior_operator, prior_start = None, None
     balance = 0
-    for start in range(len(name)):
+    part = line
+    for start in range(len(line)):
         if line[start] == '(':
             balance += 1
         if line[start] == ')':
             balance -= 1
         if balance == 0:
             for name in priorities.keys():
-                if line.startswith(name):
+                if part.startswith(name):
                     if not prior_operator or priorities[name] >= priorities[prior_operator]:
                         prior_operator, prior_start = name, start
+        part = part[1:]
 
     if prior_operator is not None:
         if prior_start == 0:
             return Composition(Not(), [parser_copy(line[3:])])
         return Composition(
             FuncType[prior_operator](),
-            [parser_copy(line[:prior_start]),parse(line[prior_start + len(prior_operator):])]
+            [parser_copy(line[:prior_start]),parser_copy(line[prior_start + len(prior_operator):])]
             )
 
     if line in ['1','0']:
         return Constant(bool(int(line)))
     return Variable(line)
     
+
+
+Variable_list_of_means = {'a':False,
+                          'b':True}
+
+print(parser_copy(input()))
