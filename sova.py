@@ -9,6 +9,8 @@ class Operator:
     def __call__(self, *args):
         assert len(args) == self.arity, "Wrong number of arguments"
         return self.func(*args)
+    def depth(self):
+        return 1
 
 class Composition:
     def __init__(self,operator, args_list):
@@ -21,9 +23,30 @@ class Composition:
 
     def __str__(self):
         if len(self.args) == 2:
-            return '('+str(self.args[0])+str(self.operator)+str(self.args[1])+')'
+            return '('+str(self.args[0])+' '+str(self.operator)+' '+str(self.args[1])+')'
+        elif len(self.args)  == 1:
+            return '('+str(self.operator)+' '+str(self.args[0])+')'
         else:
-            return '('+str(self.operator)+str(self.args[0])+')'
+            return str(self.operator)
+
+    def depth(self):
+        max([i.depth() for i in self.args])+1
+
+    def prednf(self):
+        for i in range(len(self.args)):
+            self.args[i] = self.args[i].prednf()
+        return self.operator.prednf(*self.args)
+    def first_iter(self):
+        if str(self.operator)=='not':
+            if str(self.args[0].operator) == 'or':
+                self.operator == And()
+                self.args = [Composition(Not(),[self.args[0].args[0]]),Composition(Not(),[self.args[0].args[1]])]
+
+    def todnf(self):
+        self.prednf()
+        #self.first_iter()
+        return self
+
 
 class Variable(Operator):
     def __init__(self,const_name):
@@ -32,15 +55,21 @@ class Variable(Operator):
     def __str__(self):
         return '('+self.const_name+')'
 
+    def prednf(self,*args):
+        return Composition(Variable(self.const_name),[])
+
 
 
 class Constant(Operator):
     def __init__(self,boolean):
-        self.boolean
+        self.boolean = boolean
         Operator.__init__(self,lambda : boolean,0)
 
     def __str__(self):
-        return int(boolean)
+        return str(int(self.boolean))
+
+    def prednf(self,*args):
+        return Composition(Constant(self.boolean),[])
 
 class And(Operator):
     def __init__(self):
@@ -48,6 +77,11 @@ class And(Operator):
 
     def __str__(self):
         return 'and'
+
+    def prednf(self,*args):
+        return Composition(self,args)
+
+
 
 
 
@@ -58,12 +92,19 @@ class Not(Operator):
     def __str__(self):
         return 'not'
 
+    def prednf(self,*args):
+        return Composition(self,args)
+
 
 class Or(Operator):
     def __init__(self):
         Operator.__init__(self,lambda x,y: x or y, 2)
+    
     def __str__(self):
         return 'or'
+
+    def prednf(self,*args):
+        return Composition(self,args)
 
 
 class Xor(Operator):
@@ -73,12 +114,18 @@ class Xor(Operator):
     def __str__(self):
         return 'xor'
 
+    def prednf(self,*args):
+        return Composition(Or(),[Composition(And(),[args[0],Composition(Not(),[args[1]])]),Composition(And(),[args[1],Composition(Not(),[args[0]])])])
+
 class Eq(Operator):
     def __init__(self):
         Operator.__init__(self,lambda x,y: x == y, 2)
 
     def __str__(self):
         return 'eq'
+
+    def prednf(self,*args):
+        return Composition(Or(),[Composition(And(),[args[0],args[1]]),Composition(And(),[Composition(Not(),[args[1]]),Composition(Not(),[args[0]])])])
 
 
 class Impl(Operator):
@@ -87,6 +134,9 @@ class Impl(Operator):
 
     def __str__(self):
         return 'impl'
+
+    def prednf(self,*args):
+        return Composition(Or(),[args[1],Composition(Not(),[args[0]])])
 
 
 
@@ -97,6 +147,8 @@ class Nand(Operator):
     def __str__(self):
         return 'nand'
 
+    def prednf(self,*args):
+        return Composition(Or(),[Composition(Not(),[args[1]]),Composition(Not(),[args[0]])])
 
 
 class Nor(Operator):
@@ -105,6 +157,9 @@ class Nor(Operator):
 
     def __str__(self):
         return 'nor'
+
+    def prednf(self):
+        return Composition(And(),[Composition(Not(),[args[1]]),Composition(Not(),[args[0]])])
 
 
 
@@ -185,4 +240,4 @@ def parser_copy(line):
 Variable_list_of_means = {'a':False,
                           'b':True}
 
-print(parser_copy(input()))
+print(parser_copy(input()).todnf())
