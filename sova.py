@@ -18,6 +18,10 @@ class Composition:
 
 
 
+class Constant(Operator):
+    def __init__(self,boolean):
+        Constant.super().__init__(lambda: boolean)
+
 class And(Operator):
     def __init__(self):
         And.super().__init__(lambda x,y: x and y, 2)
