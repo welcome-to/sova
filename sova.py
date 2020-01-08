@@ -46,23 +46,30 @@ class Composition:
         list_of_variables = self.list_of_variables()
         print(list_of_variables)
         print(self)
-
+        sdnfform = ''
         for var in product('10',repeat=len(list_of_variables)):
             dick = dict(zip(list_of_variables, [bool(int(i)) for i in var]))
             global Variable_list_of_means
             Variable_list_of_means = dick
-            c = list(dick.values())
-            c.append(self())
-            print(c)
-        return list_of_variables
+            val  = list(dick.values())
+            if self():
+                if sdnfform:
+                    sdnfform += ' or '
+                sdnfform += list_of_variables[0] if val[0] else '!' + list_of_variables[0]
+                for i in range(len(val[1:])):
+                    if val[i+1]:
+                        sdnfform+= ' and ' + list_of_variables[i+1]
+                    else:
+                        sdnfform+= ' and !' + list_of_variables[i+1]
+        if sdnfform:      
+            return sdnfform
+        else:
+            return "0"
     def list_of_variables(self):
         add = []
         for i in self.args:
-            if type(i) == type(Variable('')):
-                add.append(i.const_name)
-            else:
-                add.extend(i.list_of_variables())
-        return list(set(add))
+            add.extend(i.list_of_variables())
+        return sorted(list(set(add)))
 
     def prednf(self):
         for i in range(len(self.args)):
@@ -99,6 +106,9 @@ class Variable(Operator):
     def list_of_variables(self):
         return [self.const_name]
 
+    def sdnf(self):
+        return str(self)
+
 
 class Constant(Operator):
     def __init__(self,boolean):
@@ -112,6 +122,9 @@ class Constant(Operator):
         return Composition(Constant(self.boolean),[])
     def list_of_variables(self):
         return []
+
+    def sdnf(self):
+        return "stupido!"
 
 class And(Operator):
     def __init__(self):
