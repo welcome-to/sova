@@ -45,9 +45,10 @@ class Composition:
     def sdnf(self):
         list_of_variables = self.list_of_variables()
         print(list_of_variables)
+        print(self)
 
         for var in product('10',repeat=len(list_of_variables)):
-            dick = dict(zip(list_of_variables, [i for i in var]))
+            dick = dict(zip(list_of_variables, [bool(int(i)) for i in var]))
             global Variable_list_of_means
             Variable_list_of_means = dick
             c = list(dick.values())
@@ -60,8 +61,8 @@ class Composition:
             if type(i) == type(Variable('')):
                 add.append(i.const_name)
             else:
-                add = i.list_of_variables()
-        return add
+                add.extend(i.list_of_variables())
+        return list(set(add))
 
     def prednf(self):
         for i in range(len(self.args)):
