@@ -1,3 +1,9 @@
+from itertools import product
+
+
+
+
+
 class Operator:
     def __init__(self, func, arity):
         self.func = func
@@ -38,16 +44,24 @@ class Composition:
 
     def sdnf(self):
         list_of_variables = self.list_of_variables()
+        print(list_of_variables)
+
+        for var in product('10',repeat=len(list_of_variables)):
+            dick = dict(zip(list_of_variables, [i for i in var]))
+            global Variable_list_of_means
+            Variable_list_of_means = dick
+            c = list(dick.values())
+            c.append(self())
+            print(c)
         return list_of_variables
-    def list_of_variables(self,curent=[]):
+    def list_of_variables(self):
         add = []
         for i in self.args:
             if type(i) == type(Variable('')):
                 add.append(i.const_name)
             else:
-                add = i.list_of_variables(curent=curent)
-        curent.extend(add)
-        return curent
+                add = i.list_of_variables()
+        return add
 
     def prednf(self):
         for i in range(len(self.args)):
@@ -81,7 +95,7 @@ class Variable(Operator):
 
     def prednf(self,*args):
         return Composition(Variable(self.const_name),[])
-    def list_of_variables(self,curent=1):
+    def list_of_variables(self):
         return [self.const_name]
 
 
@@ -95,7 +109,7 @@ class Constant(Operator):
 
     def prednf(self,*args):
         return Composition(Constant(self.boolean),[])
-    def list_of_variables(self,curent=0):
+    def list_of_variables(self):
         return []
 
 class And(Operator):
@@ -266,5 +280,7 @@ def parser_copy(line):
 
 Variable_list_of_means = {'a':False,
                           'b':True}
+
+
 
 print(parser_copy(input()).sdnf())
