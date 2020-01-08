@@ -35,6 +35,20 @@ class Composition:
         else:
             return 1
 
+
+    def sdnf(self):
+        list_of_variables = self.list_of_variables()
+        return list_of_variables
+    def list_of_variables(self,curent=[]):
+        add = []
+        for i in self.args:
+            if type(i) == type(Variable('')):
+                add.append(i.const_name)
+            else:
+                add = i.list_of_variables(curent=curent)
+        curent.extend(add)
+        return curent
+
     def prednf(self):
         for i in range(len(self.args)):
             self.args[i] = self.args[i].prednf()
@@ -67,7 +81,8 @@ class Variable(Operator):
 
     def prednf(self,*args):
         return Composition(Variable(self.const_name),[])
-
+    def list_of_variables(self,curent=1):
+        return [self.const_name]
 
 
 class Constant(Operator):
@@ -80,6 +95,8 @@ class Constant(Operator):
 
     def prednf(self,*args):
         return Composition(Constant(self.boolean),[])
+    def list_of_variables(self,curent=0):
+        return []
 
 class And(Operator):
     def __init__(self):
@@ -250,4 +267,4 @@ def parser_copy(line):
 Variable_list_of_means = {'a':False,
                           'b':True}
 
-print(parser_copy(input()).todnf())
+print(parser_copy(input()).sdnf())
