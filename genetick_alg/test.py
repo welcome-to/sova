@@ -12,14 +12,14 @@ def func2(x,y):
 
 if __name__ == "__main__":
     w = [
-        [[0.5, 0.5, 0.5],
-         [0.5, 0.5, 0.5]],
+        [[random.uniform(-1,1), random.uniform(-1,1), random.uniform(-1,1)],
+         [random.uniform(-1,1), random.uniform(-1,1), random.uniform(-1,1)]],
 
-         [[0.5, 0.5, 0.5],
-         [0.5, 0.5, 0.5],
-         [0.5, 0.5, 0.5]],
+         [[random.uniform(-1,1), random.uniform(-1,1), random.uniform(-1,1)],
+         [random.uniform(-1,1), random.uniform(-1,1), random.uniform(-1,1)],
+         [random.uniform(-1,1), random.uniform(-1,1), random.uniform(-1,1)]],
 
-        [[1], [1], [1]]
+        [[random.uniform(-1,1)], [random.uniform(-1,1)], [random.uniform(-1,1)]]
     ]
     N = 10000
     n = Network(weights=w)
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     targets = []
 
     for i in range(N):
-        p = [random.uniform(0,6),random.uniform(0,6)]
+        p = [random.uniform(0,1),random.uniform(0,1)]
         features.append(p)
         targets.append(func2(*p))
 
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     print(n)
 
     for i in range(10):
-        p = [random.uniform(0,6),random.uniform(0,6)]
+        p = [random.uniform(0,1),random.uniform(0,1)]
         res = n.run(p)
         print(p,res,func2(*p))
 

@@ -28,10 +28,16 @@ class Network(object):
         #Fix me!
         pass
 
-    def train(self,features,targets):
-        for i in range(len(targets)):
-            result = self.run(features[i])
-            self.run_back_propagation(targets[i])
+    def train(self,features,targets,train_pack_size=10):
+        for i in range(len(targets)//train_pack_size):
+            result = []
+            for j in range(train_pack_size):
+                err = self.run(features[i*train_pack_size+j])-targets[i*train_pack_size+j]
+                result.append(err)
+            average_er = sum(result)/train_pack_size
+            print(average_er)
+
+            self.run_back_propagation(average_er)
 
 
     def run(self,inputs):
@@ -49,7 +55,7 @@ class Network(object):
                 self.values[step+1].append(arg)
         return arg
 
-    def run_back_propagation(self,etalon):
+    def run_back_propagation(self,average_er):
         old_weights = deepcopy(self.weights)
         deltas = [[] for i in range(self.height)]
 
@@ -57,7 +63,7 @@ class Network(object):
             for to in range(self.layers[step]):
                 o_j = self.values[step][to]
                 if step == self.height-1:
-                    delta_j = self.activate(o_j) * (self.activate(o_j) - 1) * (etalon - o_j)
+                    delta_j = self.activate(o_j) * (self.activate(o_j) - 1) * (average_er)
                 else:
                     summa = 0
                     for child in range(self.layers[step + 1]):
@@ -71,4 +77,4 @@ class Network(object):
 
 
     def activate(self,x):
-        return 1 / (1 + np.exp(-x))
+        return 1 / (1 + math.exp(-x))
